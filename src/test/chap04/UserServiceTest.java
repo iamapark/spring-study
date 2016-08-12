@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
@@ -28,27 +29,33 @@ import springbook.user.domain.Level;
 import springbook.user.domain.User;
 import springbook.user.service.UserService;
 import springbook.user.service.UserServiceImpl;
-import springbook.user.service.UserServiceTx;
 
 /**
  * Created by jinyoung.park89 on 2016. 3. 12..
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/applicationContext.xml")
-@DirtiesContext
+@ContextConfiguration(locations = "/applicationContext-test.xml")
 public class UserServiceTest {
 
     @Autowired
-    UserService userService;
-    List<User> users;
+    private ApplicationContext context;
+
     @Autowired
-    private UserServiceImpl userServiceImpl;
+    private UserService testUserService;
+
+    @Autowired
+    private UserService userService;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private PlatformTransactionManager transactionManager;
+
     @Autowired
     private MailSender mailSender;
+
+    List<User> users;
 
     @Before
     public void setUp() {
@@ -64,8 +71,6 @@ public class UserServiceTest {
     public void upgradeLevels() throws SQLException {
 
         UserServiceImpl userServiceImpl = new UserServiceImpl();
-        /*MockUserDao mockUserDao = new MockUserDao(this.users);
-        userServiceImpl.setUserDao(mockUserDao);*/
 
         UserDao mockUserDao = mock(UserDao.class);
         userServiceImpl.setUserDao(mockUserDao);
@@ -105,8 +110,8 @@ public class UserServiceTest {
         User userWithoutLevel = users.get(0);
         userWithoutLevel.setLevel(null);
 
-        this.userServiceImpl.add(userWithLevel);
-        this.userServiceImpl.add(userWithoutLevel);
+        this.userService.add(userWithLevel);
+        this.userService.add(userWithoutLevel);
 
         User userWithLevelRead = userDao.get(userWithLevel.getId());
         User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
@@ -116,23 +121,22 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeAllOrNothing() throws SQLException {
-        TestUserService testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setUserDao(this.userDao);
-        testUserService.setMailSender(this.mailSender);
+    public void upgradeAllOrNothing() throws Exception {
+        /*TestUserServiceImpl testUserServiceImpl = new TestUserServiceImpl(users.get(3).getId());
+        testUserServiceImpl.setUserDao(this.userDao);
+        testUserServiceImpl.setMailSender(this.mailSender);
 
-        UserServiceTx txUserService = new UserServiceTx();
-        txUserService.setTransactionManager(this.transactionManager);
-        txUserService.setUserService(testUserService);
+        ProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", ProxyFactoryBean.class);
+        txProxyFactoryBean.setTarget(testUserServiceImpl);
+        UserService proxiedUserService = (UserService) txProxyFactoryBean.getObject();*/
 
         userDao.deleteAll();
         users.forEach(user -> userDao.add(user));
 
         try {
-            txUserService.upgradeLevels();
+            this.testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
-
         }
 
         checkLevelUpgrade(users.get(1), false);
@@ -147,11 +151,10 @@ public class UserServiceTest {
         }
     }
 
-    static class TestUserService extends UserServiceImpl {
-        private String id;
+    static class TestUserServiceImpl extends UserServiceImpl {
+        private String id = "testID4";
 
-        private TestUserService(String id) {
-            this.id = id;
+        public TestUserServiceImpl() {
         }
 
         @Override

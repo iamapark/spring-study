@@ -26,12 +26,8 @@
         <property name="dataSource" ref="countingDatasource" />
     </bean>
 
-    <bean id="userService" class="springbook.user.service.UserServiceTx">
-        <property name="userService" ref="userServiceImpl"/>
-        <property name="transactionManager" ref="transactionManager"/>
-    </bean>
 
-    <bean id="userServiceImpl" class="springbook.user.service.UserServiceImpl">
+    <bean id="userService" class="springbook.user.service.UserServiceImpl">
         <property name="userDao" ref="userDao"/>
         <property name="mailSender" ref="mailSender"/>
     </bean>
@@ -40,6 +36,24 @@
         <property name="dataSource" ref="countingDatasource"/>
     </bean>
 
-    <bean id="mailSender" class="springbook.user.service.DummyMailSender">
+    <bean id="mailSender" class="chap06.mock.DummyMailSender">
     </bean>
+
+
+
+    <bean id="transactionPointcut" class="springbook.proxy.NameMatchClassMethodPointcut">
+        <property name="mappedClassName" value="*ServiceImpl" />
+        <property name="mappedName" value="upgrade*" />
+    </bean>
+
+    <bean id="transactionAdvice" class="springbook.proxy.advice.TransactionAdvice">
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+
+    <bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <property name="advice" ref="transactionAdvice" />
+        <property name="pointcut" ref="transactionPointcut" />
+    </bean>
+
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 </beans>

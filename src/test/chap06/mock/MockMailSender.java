@@ -1,18 +1,27 @@
-package springbook.user.service;
+package chap06.mock;
 
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author jinyoung.park89
- * @date 2016. 3. 13.
+ * @since 8/1/16
  */
-public class DummyMailSender implements MailSender {
+public class MockMailSender implements MailSender {
+
+    private List<String> requests = new ArrayList<>();
+
+    public List<String> getRequests() {
+        return requests;
+    }
 
     @Override
     public void send(SimpleMailMessage simpleMessage) throws MailException {
-
+        requests.add(simpleMessage.getTo()[0]);
     }
 
     @Override
