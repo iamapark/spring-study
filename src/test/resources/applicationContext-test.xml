@@ -39,9 +39,8 @@
     <bean id="mailSender" class="chap06.mock.DummyMailSender">
     </bean>
 
-    <bean id="transactionPointcut" class="springbook.proxy.NameMatchClassMethodPointcut">
-        <property name="mappedClassName" value="*ServiceImpl" />
-        <property name="mappedName" value="upgrade*" />
+    <bean id="transactionPointcut" class="org.springframework.aop.aspectj.AspectJExpressionPointcut">
+        <property name="expression" value="execution(* * ..*ServiceImpl.upgrade*(..))" />
     </bean>
 
     <bean id="transactionAdvice" class="springbook.proxy.advice.TransactionAdvice">
@@ -55,5 +54,5 @@
 
     <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 
-    <bean id="testUserService" class="chap04.UserServiceTest.TestUserServiceImpl" parent="userService" />
+    <bean id="testUserService" class="chap04.UserServiceTest.TestUserService" parent="userService" />
 </beans>

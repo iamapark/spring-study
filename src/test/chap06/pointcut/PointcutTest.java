@@ -1,10 +1,13 @@
-package springbook.pointcut;
+package chap06.pointcut;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 import org.junit.Test;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import springbook.pointcut.Target;
+
+import java.nio.channels.AsynchronousFileChannel;
 
 /**
  * @author jinyoung.park89
@@ -13,14 +16,20 @@ import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 public class PointcutTest {
 
     @Test
-    public void methodSignaturePointcut() throws SecurityException, NoSuchMethodException {
-        AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
-        pointcut.setExpression("execution(public int springbook.pointcut.Target.minus(int,int) throws java.lang.RuntimeException)");
+    public void methodSignaturePointcut() throws Exception {
+
+        String expression = "execution(public int springbook.pointcut.Target.minus(int,int) throws java.lang.RuntimeException)";
 
         // Target.minus()
-        assertThat(pointcut.getClassFilter().matches(Target.class) && pointcut.getMethodMatcher().matches(Target.class.getMethod("minus", int.class, int.class), null), is(true));
+        pointcutMatches(expression,true, Target.class, "minus", int.class, int.class);
 
         // Target.plus()
-        assertThat(pointcut.getClassFilter().matches(Target.class) && pointcut.getMethodMatcher().matches(Target.class.getMethod("plus", int.class, int.class), null), is(false));
+        pointcutMatches(expression, false, Target.class, "plus", int.class, int.class);
+    }
+
+    public void pointcutMatches(String expression, Boolean expected, Class<?> clazz, String methodName, Class<?>... args) throws Exception {
+        AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+        pointcut.setExpression(expression);
+        assertThat(pointcut.getClassFilter().matches(clazz) && pointcut.getMethodMatcher().matches(clazz.getMethod(methodName, args), null), is(expected));
     }
 }

@@ -1,16 +1,12 @@
 package chap06.proxy;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.Is.isA;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.Proxy;
 
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.Pointcut;
@@ -20,6 +16,7 @@ import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import springbook.proxy.Hello;
 import springbook.proxy.HelloTarget;
 import springbook.proxy.HelloUppercase;
