@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="
 		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
@@ -43,20 +45,41 @@
         <property name="expression" value="execution(* * ..*ServiceImpl.upgrade*(..))" />
     </bean>-->
 
-    <bean id="transactionAdvice" class="springbook.proxy.advice.TransactionAdvice">
-        <property name="transactionManager" ref="transactionManager" />
-    </bean>
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 
     <!--<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
         <property name="advice" ref="transactionAdvice" />
         <property name="pointcut" ref="transactionPointcut" />
     </bean>-->
 
-    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
+    <!--<bean id="transactionAdvice" class="springbook.proxy.advice.TransactionAdvice">
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>-->
+
+    <!--<bean id="transactionAdvice" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">PROPAGATION_REQUIRED,readOnly,timeout_30</prop>
+                <prop key="upgrade*">PROPAGATION_REQUIRES_NEW,ISOLATION_SERIALIZABLE</prop>
+                <prop key="*">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+    </bean>-->
+
+    <tx:annotation-driven />
 
     <aop:config>
-        <aop:advisor advice-ref="transactionAdvice" pointcut="execution(* * ..*ServiceImpl.upgrade*(..))" />
+        <aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)" />
     </aop:config>
+
+    <tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" timeout="30"/>
+            <!--<tx:method name="upgrade*" propagation="REQUIRES_NEW" isolation="SERIALIZABLE"/>-->
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
 
     <bean id="testUserService" class="chap04.UserServiceTest.TestUserService" parent="userService" />
 </beans>

@@ -5,6 +5,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import springbook.user.domain.User;
 
+import java.util.List;
+
 /**
  * @author jinyoung.park89
  * @date 2016. 3. 13.
@@ -38,5 +40,25 @@ public class UserServiceTx implements UserService {
             this.transactionManager.rollback(status);
             throw e;
         }
+    }
+
+    @Override
+    public User get(String id) {
+        return userService.get(id);
+    }
+
+    @Override
+    public List<User> getAll() {
+        return userService.getAll();
+    }
+
+    @Override
+    public void deleteAll() {
+        userService.deleteAll();
+    }
+
+    @Override
+    public void update(User user) {
+        userService.update(user);
     }
 }
